@@ -18,6 +18,7 @@ struct Igcs {
     igcs_lib = LoadLibraryA("IgcsConnector.addon64");
     if (!igcs_lib) {
       std::cout << "IgcsConnector.addon64 not found, not going to use IGCS DoF." << std::endl;
+      return;
     }
 
     using GetDataFunc = std::uint8_t*(*)();
@@ -28,6 +29,10 @@ struct Igcs {
     camera_data = get_data_from_tools();
 
     std::cout << "IgcsConnector was loaded and enabled!" << std::endl;
+  }
+
+  static bool check_valid() {
+    return igcs_connector && igcs_connector->igcs_lib != 0;
   }
 
   bool check_enabled() {
@@ -82,6 +87,7 @@ EXPOSE void __cdecl IGCS_MoveCameraPanorama() {}
 
 EXPOSE void __cdecl IGCS_MoveCameraMultishot(float step_left, float step_up, float fov, int from_start) {
   if (!igcs_connector) { return; }
+
   printf("Commanded %f %f\n", step_left, step_up);
   igcs_connector->movement.delta_pos_x = -step_left;
   igcs_connector->movement.delta_pos_z = step_up;
