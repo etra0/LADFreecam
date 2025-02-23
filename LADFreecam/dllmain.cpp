@@ -123,11 +123,10 @@ void input_update()
     bool lAlt = false;
     bool lCtrl = false;
 
-    if (igcs_connector && igcs_connector->rendering) {
+    if (Igcs::check_valid() && igcs_connector->rendering) {
       deltaPosX = igcs_connector->movement.delta_pos_x;
       deltaPosZ = igcs_connector->movement.delta_pos_z;
 
-      printf("Moved to %f %f\n", deltaPosX, deltaPosZ);
       igcs_connector->reset_deltas();
       igcs_connector->pending_update = false;
       return;
@@ -328,17 +327,12 @@ __int64 update_camera(void* camera_entity, camera_info* info)
 
     camera_info* ourInfoPtr = &m_cameraMap[(__int64)camera_entity]->data;
     // Update IGCSDof Camera Info as well.
-    if (igcs_connector && igcs_connector->pending_update) {
+    if (Igcs::check_valid() && igcs_connector->pending_update) {
       std::cout << "Back to original position" << std::endl;
       *ourInfoPtr = igcs_connector->camera;
       igcs_connector->pending_update = false;
-      /*
-      ourInfoPtr->pos = igcs_connector->camera.pos;
-      ourInfoPtr->focus = igcs_connector->camera.focus;
-      ourInfoPtr->rot = igcs_connector->camera.rot;
-      */
     }
-    if (igcs_connector && !igcs_connector->check_enabled()) {
+    if (Igcs::check_valid() && !igcs_connector->check_enabled()) {
       igcs_connector->camera = *ourInfoPtr;
     } 
 
@@ -548,7 +542,7 @@ DWORD WINAPI AppThread(HMODULE hModule)
             }
         }
         
-        if (igcs_connector) {
+        if (Igcs::check_valid()) {
           igcs_connector->update_camera_status(enabled);
         }
 
