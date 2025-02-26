@@ -10,6 +10,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/quaternion.hpp"
 #include "glm/gtx/rotate_normalized_axis.hpp"
+#include "IGCSConnector.h"
 #include <cstdint>
 #include "memory.h"
 #include <map>
@@ -121,6 +122,16 @@ void input_update()
     bool lShift = false;
     bool lAlt = false;
     bool lCtrl = false;
+
+    if (igcs_connector && igcs_connector->rendering) {
+      deltaPosX = igcs_connector->movement.delta_pos_x;
+      deltaPosZ = igcs_connector->movement.delta_pos_z;
+
+      printf("Moved to %f %f\n", deltaPosX, deltaPosZ);
+      igcs_connector->reset_deltas();
+      igcs_connector->pending_update = false;
+      return;
+    }
 
     if (GetKeyState(VK_PRIOR) & 0x8000)
         altControls = true;
@@ -315,6 +326,22 @@ __int64 update_camera(void* camera_entity, camera_info* info)
         enable_no_input(true);
     }
 
+    camera_info* ourInfoPtr = &m_cameraMap[(__int64)camera_entity]->data;
+    // Update IGCSDof Camera Info as well.
+    if (igcs_connector && igcs_connector->pending_update) {
+      std::cout << "Back to original position" << std::endl;
+      *ourInfoPtr = igcs_connector->camera;
+      igcs_connector->pending_update = false;
+      /*
+      ourInfoPtr->pos = igcs_connector->camera.pos;
+      ourInfoPtr->focus = igcs_connector->camera.focus;
+      ourInfoPtr->rot = igcs_connector->camera.rot;
+      */
+    }
+    if (igcs_connector && !igcs_connector->check_enabled()) {
+      igcs_connector->camera = *ourInfoPtr;
+    } 
+
     input_update(); //input update
     update_common(camera_entity, info); //general purpose DE movement update
     currentGameClass->update_enabled(deltaPosX, deltaPosY, deltaFocusX, deltaFocusY, deltaFov);
@@ -393,6 +420,9 @@ DWORD WINAPI AppThread(HMODULE hModule)
         std::thread updateThread(update_thread);
         updateThread.detach();
     }
+
+    // Load IgcsConnector and enable camera.
+    igcs_connector = new Igcs();
 
     std::cout << "**********************\n";
     std::cout << "Yakuza Freecam Active!\n";
@@ -518,6 +548,10 @@ DWORD WINAPI AppThread(HMODULE hModule)
             }
         }
         
+        if (igcs_connector) {
+          igcs_connector->update_camera_status(enabled);
+        }
+
         if (enabled)
         {
             if (altControls)

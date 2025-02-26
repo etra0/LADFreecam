@@ -116,6 +116,12 @@
     <ClInclude Include="Entity\Y5\CActionManager.h">
       <Filter>Header Files\Entity\Y5</Filter>
     </ClInclude>
+    <ClInclude Include="IGCSConnector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dllmain.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -160,14 +166,6 @@
     <ClCompile Include="Game\FreecamGameY5.cpp">
       <Filter>Source Files\Game</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="Minhook\libMinHook.x64.lib">
-      <Filter>MinHook</Filter>
-    </Library>
-    <Library Include="Minhook\MinHook.x64.lib">
-      <Filter>MinHook</Filter>
-    </Library>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\x64\Release\LADFreecam.asi" />
